@@ -13,16 +13,6 @@ class AppReceiptFlowTest(unittest.TestCase):
         self.client = app.test_client()
 
     def test_receipt_upload_triggers_automatic_confirmation(self):
-        pagamentos = io.BytesIO(
-            b"aluno,matricula,valor,data_pagamento\nMaria,100,150.00,2026-09-10\n"
-        )
-        pagamentos.name = "pagamentos.csv"
-
-        ficha = io.BytesIO(
-            b"aluno,matricula,valor,status,competencia\nMaria,100,150.00,aberto,09/2026\n"
-        )
-        ficha.name = "ficha.csv"
-
         comprovante = io.BytesIO(
             b"Aluno: Maria\nMatricula: 100\nValor: R$ 150,00\nData: 10/09/2026\n"
         )
@@ -31,8 +21,6 @@ class AppReceiptFlowTest(unittest.TestCase):
         response = self.client.post(
             "/analisar",
             data={
-                "pagamentos": (pagamentos, "pagamentos.csv"),
-                "ficha": (ficha, "ficha.csv"),
                 "comprovante": (comprovante, "comprovante.txt"),
             },
             content_type="multipart/form-data",

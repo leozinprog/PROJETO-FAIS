@@ -111,23 +111,19 @@
       line-height: 1.45;
     }
 
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 18px;
+    .drop-area {
       margin-top: 26px;
-    }
-
-    .drop {
       border: 2px dashed #efb067;
       border-radius: 12px;
       background: rgba(255,255,255,0.15);
-      min-height: 146px;
+      min-height: 180px;
       padding: 18px 18px 14px;
       display: flex;
       flex-direction: column;
       justify-content: center;
-      position: relative;
+      align-items: center;
+      text-align: center;
+      gap: 12px;
       cursor: pointer;
       overflow: hidden;
     }
@@ -139,12 +135,9 @@
       font-size: 1.05rem;
       font-weight: 700;
       color: #2d3137;
-      margin: 0 0 14px;
     }
 
-    .drop-label::before { content: "📄"; font-size: 1.2rem; }
-    .drop:nth-child(2) .drop-label::before { content: "📊"; }
-    .drop:nth-child(3) .drop-label::before { content: "🧾"; }
+    .drop-label::before { content: "🧾"; font-size: 1.2rem; }
 
     input[type="file"] {
       width: 100%;
@@ -283,25 +276,15 @@
   <main class="wrap">
     <div class="card">
       <h2>Conferência financeira</h2>
-      <p class="muted">Envie os pagamentos realizados, a ficha financeira e, se houver, o comprovante de pagamento. O sistema cruza aluno, matrícula, valor, data e competência e sugere a próxima ação.</p>
+      <p class="muted">Anexe o comprovante de pagamento para que a IA identifique o aluno, o valor, a data e confirme se há baixa automática.</p>
 
-      <div class="grid">
-        <label class="drop">
-          <span class="drop-label">Pagamentos CSV</span>
-          <input id="pag" type="file" accept=".csv">
-        </label>
-        <label class="drop">
-          <span class="drop-label">Ficha financeira CSV</span>
-          <input id="ficha" type="file" accept=".csv">
-        </label>
-        <label class="drop">
-          <span class="drop-label">Comprovante</span>
-          <input id="comprovante" type="file" accept=".png,.jpg,.jpeg,.pdf,.txt,.csv">
-        </label>
-      </div>
+      <label class="drop-area">
+        <span class="drop-label">Anexar comprovante de pagamento</span>
+        <input id="comprovante" type="file" accept=".png,.jpg,.jpeg,.pdf,.txt,.csv">
+      </label>
 
       <div class="actions">
-        <button id="btn" class="btn" onclick="analisar()">Analisar pagamentos</button>
+        <button id="btn" class="btn" onclick="analisar()">Validar pagamento</button>
       </div>
 
       <div id="msg"></div>
@@ -334,25 +317,21 @@
 
   <script>
     async function analisar(){
-      const p = document.getElementById('pag').files[0];
-      const f = document.getElementById('ficha').files[0];
       const comprovante = document.getElementById('comprovante').files[0];
       const msg = document.getElementById('msg');
       const btn = document.getElementById('btn');
 
-      if (!p || !f) {
-        msg.innerHTML = '<div class="alert">Selecione os dois arquivos CSV.</div>';
+      if (!comprovante) {
+        msg.innerHTML = '<div class="alert">Anexe o comprovante de pagamento para continuar.</div>';
         return;
       }
 
       btn.disabled = true;
-      btn.textContent = 'Analisando...';
+      btn.textContent = 'Validando...';
       msg.innerHTML = '';
 
       const fd = new FormData();
-      fd.append('pagamentos', p);
-      fd.append('ficha', f);
-      if (comprovante) fd.append('comprovante', comprovante);
+      fd.append('comprovante', comprovante);
 
       try {
         const r = await fetch('/analisar', { method: 'POST', body: fd });
@@ -378,7 +357,7 @@
       }
 
       btn.disabled = false;
-      btn.textContent = 'Analisar pagamentos';
+      btn.textContent = 'Validar pagamento';
     }
   </script>
 </body>

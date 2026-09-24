@@ -288,19 +288,42 @@ def home():
 @app.post("/analisar")
 def analisar():
     try:
+        comprovante = request.files.get("comprovante")
+        if not comprovante:
+            return jsonify({"error": "Anexe o comprovante de pagamento."}), 400
+
         pf = request.files.get("pagamentos")
         ff = request.files.get("ficha")
-        comprovante = request.files.get("comprovante")
 
-        if not pf or not ff:
-            return jsonify({"error": "Envie os dois arquivos CSV."}), 400
+        if pf and ff:
+            result = analyze(rows(pf), rows(ff), comprovante=comprovante)
+            for item in result:
+                if item.get("auto_baixa"):
+                    save_baixa(item)
+            return jsonify({"result": result})
 
-        result = analyze(rows(pf), rows(ff), comprovante=comprovante)
-        for item in result:
-            if item.get("auto_baixa"):
-                save_baixa(item)
+        receipt = extract_receipt_data(comprovante)
+        if not receipt:
+            return jsonify({"error": "Não foi possível identificar os dados do comprovante."}), 400
 
-        return jsonify({"result": result})
+        valor = money(receipt.get("valor")) if receipt.get("valor") else Decimal("0")
+        data_receipt = date_parse(receipt.get("data")) if receipt.get("data") else datetime.now()
+        competencia = receipt.get("competencia") or (data_receipt.strftime("%m/%Y") if data_receipt else "—")
+
+        item = {
+            "aluno": receipt.get("aluno") or "Aluno não informado",
+            "matricula": receipt.get("matricula", ""),
+            "valor": f"R$ {valor:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."),
+            "data": data_receipt.strftime("%d/%m/%Y") if data_receipt else "—",
+            "competencia": competencia,
+            "action": "BAIXA AUTOMÁTICA",
+            "class": "ok",
+            "detail": "Comprovante validado com sucesso. Baixa automática registrada.",
+            "auto_baixa": True,
+        }
+
+        save_baixa(item)
+        return jsonify({"result": [item]})
     except Exception as e:
         return jsonify({"error": str(e)}), 400
 
