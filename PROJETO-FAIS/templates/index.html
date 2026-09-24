@@ -1,0 +1,385 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Fatecie Finance AI</title>
+  <style>
+    :root {
+      --orange-1: #f39b31;
+      --orange-2: #f08a1f;
+      --orange-3: #d66b11;
+      --bg: #efefee;
+      --panel: #f5f5f5;
+      --white: #fff;
+      --text: #1d2433;
+      --muted: #6b7280;
+      --line: #d9d9d6;
+      --shadow: rgba(43, 47, 56, 0.08);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Inter, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    .header {
+      background: linear-gradient(90deg, var(--orange-2), var(--orange-1));
+      padding: 22px 0 18px;
+      box-shadow: inset 0 -1px 0 rgba(0,0,0,0.05);
+    }
+
+    .brand-wrap {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 0 24px;
+      display: flex;
+      align-items: center;
+      gap: 18px;
+    }
+
+    .logo {
+      width: 72px;
+      height: 72px;
+      border-radius: 18px;
+      background: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 8px 18px rgba(101, 49, 18, 0.14);
+      overflow: hidden;
+      padding: 8px;
+    }
+
+    .logo img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+    }
+
+    .brand-text {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .brand-text h1 {
+      margin: 0;
+      font-size: clamp(2.1rem, 3vw, 4.1rem);
+      line-height: 1.05;
+      font-weight: 800;
+      color: white;
+      letter-spacing: -0.04em;
+    }
+
+    .brand-text p {
+      margin: 8px 0 0;
+      font-size: clamp(1rem, 1.6vw, 1.65rem);
+      color: rgba(255,255,255,0.96);
+      font-weight: 500;
+    }
+
+    .wrap {
+      max-width: 1180px;
+      margin: 46px auto 0;
+      padding: 0 20px 30px;
+    }
+
+    .card {
+      background: rgba(255,255,255,0.65);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      box-shadow: 0 4px 14px var(--shadow);
+      padding: 26px 28px 24px;
+    }
+
+    .card h2 {
+      margin: 0 0 10px;
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: #2b2f36;
+    }
+
+    .muted {
+      margin: 0;
+      color: #5d6470;
+      font-size: 0.96rem;
+      line-height: 1.45;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 18px;
+      margin-top: 26px;
+    }
+
+    .drop {
+      border: 2px dashed #efb067;
+      border-radius: 12px;
+      background: rgba(255,255,255,0.15);
+      min-height: 146px;
+      padding: 18px 18px 14px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      position: relative;
+      cursor: pointer;
+      overflow: hidden;
+    }
+
+    .drop-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #2d3137;
+      margin: 0 0 14px;
+    }
+
+    .drop-label::before { content: "📄"; font-size: 1.2rem; }
+    .drop:nth-child(2) .drop-label::before { content: "📊"; }
+    .drop:nth-child(3) .drop-label::before { content: "🧾"; }
+
+    input[type="file"] {
+      width: 100%;
+      max-width: 100%;
+      color: #6b7280;
+      font-size: 0.95rem;
+      display: block;
+      line-height: 1.3;
+    }
+
+    input[type="file"]::file-selector-button {
+      appearance: none;
+      background: rgba(255,255,255,0.9);
+      color: #2f3747;
+      border: 1px solid #d2d7df;
+      border-radius: 5px;
+      padding: 9px 14px;
+      font-weight: 700;
+      margin-right: 10px;
+      cursor: pointer;
+    }
+
+    .actions {
+      margin-top: 28px;
+      display: flex;
+      justify-content: center;
+    }
+
+    .btn {
+      background: linear-gradient(180deg, #f6a033, #ed8d1f);
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      min-width: 220px;
+      padding: 16px 24px;
+      font-size: 1.08rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      cursor: pointer;
+      box-shadow: 0 10px 20px rgba(233, 142, 18, 0.25);
+    }
+
+    .btn:disabled { opacity: 0.72; cursor: wait; }
+
+    .alert {
+      margin-top: 18px;
+      padding: 12px 14px;
+      border-radius: 10px;
+      background: #fff0f0;
+      color: #9b1c31;
+      border: 1px solid #f3d4d4;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      margin: 20px 0;
+    }
+
+    .stat {
+      background: white;
+      border: 1px solid #e6e9ef;
+      border-radius: 14px;
+      padding: 18px;
+    }
+
+    .stat .muted {
+      font-size: 0.8rem;
+      color: #667085;
+    }
+
+    .num {
+      font-size: 2rem;
+      font-weight: 800;
+      margin-top: 8px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .result { margin-top: 20px; }
+
+    .result th,
+    .result td {
+      padding: 13px 10px;
+      border-bottom: 1px solid #edf0f4;
+      text-align: left;
+      font-size: 14px;
+      vertical-align: top;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 6px 9px;
+      border-radius: 999px;
+      font-weight: 700;
+      font-size: 12px;
+    }
+
+    .ok { background: #e7f7ed; color: #187044; }
+    .warn { background: #fff4d8; color: #8a6100; }
+    .manual { background: #f0f2f5; color: #4b5563; }
+
+    @media (max-width: 800px) {
+      .brand-wrap {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+      }
+
+      .grid,
+      .stats {
+        grid-template-columns: 1fr;
+      }
+
+      .result { overflow: auto; }
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="brand-wrap">
+      <div class="logo" aria-label="logo">
+        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQG5el-0iO_S2J-vCLndJ-kYM6T2N_w7V7Iu3KZflxIR9qc3SOlS9cQWCKR&s=10" alt="Logo Fatecie">
+      </div>
+      <div class="brand-text">
+        <h1>Fatecie Finance AI</h1>
+        <p>Análise inteligente de pagamentos e sugestão de remanejamento</p>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <div class="card">
+      <h2>Conferência financeira</h2>
+      <p class="muted">Envie os pagamentos realizados, a ficha financeira e, se houver, o comprovante de pagamento. O sistema cruza aluno, matrícula, valor, data e competência e sugere a próxima ação.</p>
+
+      <div class="grid">
+        <label class="drop">
+          <span class="drop-label">Pagamentos CSV</span>
+          <input id="pag" type="file" accept=".csv">
+        </label>
+        <label class="drop">
+          <span class="drop-label">Ficha financeira CSV</span>
+          <input id="ficha" type="file" accept=".csv">
+        </label>
+        <label class="drop">
+          <span class="drop-label">Comprovante</span>
+          <input id="comprovante" type="file" accept=".png,.jpg,.jpeg,.pdf,.txt,.csv">
+        </label>
+      </div>
+
+      <div class="actions">
+        <button id="btn" class="btn" onclick="analisar()">Analisar pagamentos</button>
+      </div>
+
+      <div id="msg"></div>
+    </div>
+
+    <div id="painel" style="display:none">
+      <div class="stats">
+        <div class="stat"><div class="muted">Pagamentos analisados</div><div id="total" class="num">0</div></div>
+        <div class="stat"><div class="muted">Compatíveis</div><div id="ok" class="num">0</div></div>
+        <div class="stat"><div class="muted">Para conferência</div><div id="warn" class="num">0</div></div>
+      </div>
+
+      <div class="card result">
+        <h2>Resultado da análise</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Aluno</th>
+              <th>Pagamento</th>
+              <th>Competência</th>
+              <th>Ação sugerida</th>
+              <th>Detalhes</th>
+            </tr>
+          </thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    async function analisar(){
+      const p = document.getElementById('pag').files[0];
+      const f = document.getElementById('ficha').files[0];
+      const comprovante = document.getElementById('comprovante').files[0];
+      const msg = document.getElementById('msg');
+      const btn = document.getElementById('btn');
+
+      if (!p || !f) {
+        msg.innerHTML = '<div class="alert">Selecione os dois arquivos CSV.</div>';
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = 'Analisando...';
+      msg.innerHTML = '';
+
+      const fd = new FormData();
+      fd.append('pagamentos', p);
+      fd.append('ficha', f);
+      if (comprovante) fd.append('comprovante', comprovante);
+
+      try {
+        const r = await fetch('/analisar', { method: 'POST', body: fd });
+        const d = await r.json();
+        if (!r.ok) throw new Error(d.error);
+
+        const data = d.result;
+        document.getElementById('painel').style.display = 'block';
+        document.getElementById('total').textContent = data.length;
+        document.getElementById('ok').textContent = data.filter(x => x.class === 'ok').length;
+        document.getElementById('warn').textContent = data.filter(x => x.class !== 'ok').length;
+        document.getElementById('tbody').innerHTML = data.map(x => `
+          <tr>
+            <td><b>${x.aluno}</b><br><span class="muted">${x.matricula}</span></td>
+            <td>${x.valor}<br>${x.data}</td>
+            <td>${x.competencia}</td>
+            <td><span class="badge ${x.class}">${x.action}</span></td>
+            <td>${x.detail}</td>
+          </tr>
+        `).join('');
+      } catch (e) {
+        msg.innerHTML = '<div class="alert">' + e.message + '</div>';
+      }
+
+      btn.disabled = false;
+      btn.textContent = 'Analisar pagamentos';
+    }
+  </script>
+</body>
+</html>

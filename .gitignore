@@ -1,0 +1,4 @@
+PROJETO-FAIS/.venv/
+PROJETO-FAIS/__pycache__/
+PROJETO-FAIS/tests/__pycache__/
+*.pyc
