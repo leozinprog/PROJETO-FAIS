@@ -3,6 +3,21 @@ import csv, io, os, re, sqlite3
 from decimal import Decimal, InvalidOperation
 from datetime import datetime
 
+try:
+    import pytesseract
+except ImportError:
+    pytesseract = None
+
+try:
+    from PIL import Image
+except ImportError:
+    Image = None
+
+try:
+    import fitz
+except ImportError:
+    fitz = None
+
 app = Flask(__name__)
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DB_PATH = os.path.join(BASE_DIR, "finance.db")
@@ -129,6 +144,38 @@ def _extract_receipt_fields(text):
     return values
 
 
+def ocr_receipt_text(file):
+    if file is None or pytesseract is None or Image is None:
+        return ""
+
+    raw = file.read()
+    if not raw:
+        return ""
+    file.seek(0)
+
+    name = (file.filename or "").lower()
+
+    try:
+        if name.endswith(".pdf"):
+            if fitz is None:
+                return ""
+            doc = fitz.open(stream=raw, filetype="pdf")
+            if doc.page_count <= 0:
+                return ""
+            page = doc[0]
+            pix = page.get_pixmap(matrix=fitz.Matrix(2, 2))
+            image = Image.open(io.BytesIO(pix.tobytes("png")))
+        elif name.endswith((".png", ".jpg", ".jpeg", ".bmp", ".tif", ".tiff")):
+            image = Image.open(io.BytesIO(raw)).convert("RGB")
+        else:
+            return ""
+
+        text = pytesseract.image_to_string(image, config="--psm 6")
+        return text or ""
+    except Exception:
+        return ""
+
+
 def extract_receipt_data(file):
     if file is None:
         return {}
@@ -148,11 +195,13 @@ def extract_receipt_data(file):
         except Exception:
             text = ""
 
+    if not text:
+        text = ocr_receipt_text(file)
+
     payload = _extract_receipt_fields(text)
     if payload:
         return payload
 
-    # fallback por nome do arquivo quando o comprovante não está em texto legível
     file_match = re.search(r"(?i)(?:aluno|nome|matricula|cpf|valor|data)[-_ ]*([A-Za-z0-9À-ÿ .'-]+)", name)
     if file_match:
         return {"aluno": file_match.group(1).strip() or "Aluno"}
