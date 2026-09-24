@@ -1,9 +1,57 @@
 from flask import Flask, render_template, request, jsonify
-import csv, io, re
+import csv, io, os, re, sqlite3
 from decimal import Decimal, InvalidOperation
 from datetime import datetime
 
 app = Flask(__name__)
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DB_PATH = os.path.join(BASE_DIR, "finance.db")
+
+
+def init_db():
+    conn = sqlite3.connect(DB_PATH)
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS baixas (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            aluno TEXT,
+            matricula TEXT,
+            cpf TEXT,
+            valor TEXT,
+            competencia TEXT,
+            data_pagamento TEXT,
+            status TEXT DEFAULT 'baixado',
+            comprovante TEXT,
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+    conn.commit()
+    conn.close()
+
+
+init_db()
+
+
+def save_baixa(item):
+    if not item or not item.get("auto_baixa"):
+        return None
+
+    conn = sqlite3.connect(DB_PATH)
+    conn.execute(
+        "INSERT INTO baixas (aluno, matricula, cpf, valor, competencia, data_pagamento, status, comprovante) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+        (
+            item.get("aluno", ""),
+            item.get("matricula", ""),
+            "",
+            item.get("valor", ""),
+            item.get("competencia", ""),
+            item.get("data", ""),
+            "baixado",
+            "comprovante_anexado",
+        ),
+    )
+    conn.commit()
+    conn.close()
+    return True
 
 
 def money(v):
@@ -199,9 +247,38 @@ def analisar():
             return jsonify({"error": "Envie os dois arquivos CSV."}), 400
 
         result = analyze(rows(pf), rows(ff), comprovante=comprovante)
+        for item in result:
+            if item.get("auto_baixa"):
+                save_baixa(item)
+
         return jsonify({"result": result})
     except Exception as e:
         return jsonify({"error": str(e)}), 400
+
+
+@app.get("/baixas")
+def listar_baixas():
+    conn = sqlite3.connect(DB_PATH)
+    registros = conn.execute(
+        "SELECT id, aluno, matricula, valor, competencia, data_pagamento, status, created_at FROM baixas ORDER BY id DESC"
+    ).fetchall()
+    conn.close()
+
+    return jsonify({
+        "baixas": [
+            {
+                "id": row[0],
+                "aluno": row[1],
+                "matricula": row[2],
+                "valor": row[3],
+                "competencia": row[4],
+                "data_pagamento": row[5],
+                "status": row[6],
+                "created_at": row[7],
+            }
+            for row in registros
+        ]
+    })
 
 
 if __name__ == "__main__":

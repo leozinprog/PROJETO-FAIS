@@ -43,6 +43,10 @@ class AppReceiptFlowTest(unittest.TestCase):
         self.assertEqual(payload["result"][0]["action"], "BAIXA AUTOMÁTICA")
         self.assertTrue(payload["result"][0]["auto_baixa"])
 
+        history = self.client.get('/baixas')
+        self.assertEqual(history.status_code, 200)
+        self.assertGreater(len(history.get_json()['baixas']), 0)
+
 
 if __name__ == "__main__":
     unittest.main()
